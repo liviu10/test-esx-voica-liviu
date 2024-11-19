@@ -12,17 +12,22 @@ export default function UpdateProfileInformation({
 }) {
     const user = usePage().props.auth.user;
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm({
-            name: user.name,
-            email: user.email,
-        });
+    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
+        full_name: user.full_name || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        email: user.email,
+        phone: user.phone || '',
+        profile_image: null, // initially null, this will be set after upload
+    });
 
     const submit = (e) => {
         e.preventDefault();
-
-        patch(route('profile.update'));
+        patch(route('profile.update'), { data });
     };
+
+    // Directly use `data.profile_image` for the image URL
+    const profileImageUrl = data.profile_image || user.profile_image || '';
 
     return (
         <section className={className}>
@@ -37,22 +42,65 @@ export default function UpdateProfileInformation({
             </header>
 
             <form onSubmit={submit} className="mt-6 space-y-6">
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
-
-                    <TextInput
-                        id="name"
-                        className="mt-1 block w-full"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                        isFocused
-                        autoComplete="name"
+                {/* Profile Image */}
+                <div className="flex items-center space-x-4">
+                    {/* Show the image from profile_image, fall back to a placeholder if not set */}
+                    <img
+                        src={profileImageUrl || '/images/default-avatar.png'} // Use a default avatar if no profile image
+                        alt="User Profile"
+                        className="h-16 w-16 rounded-full"
                     />
-
-                    <InputError className="mt-2" message={errors.name} />
+                    <div>
+                        <p className="text-sm text-gray-600">{user.email}</p>
+                    </div>
                 </div>
 
+                {/* Full Name */}
+                <div>
+                    <InputLabel htmlFor="full_name" value="Full Name" />
+
+                    <TextInput
+                        id="full_name"
+                        className="mt-1 block w-full"
+                        value={data.full_name}
+                        onChange={(e) => setData('full_name', e.target.value)}
+                        required
+                    />
+
+                    <InputError className="mt-2" message={errors.full_name} />
+                </div>
+
+                {/* First Name */}
+                <div>
+                    <InputLabel htmlFor="first_name" value="First Name" />
+
+                    <TextInput
+                        id="first_name"
+                        className="mt-1 block w-full"
+                        value={data.first_name}
+                        onChange={(e) => setData('first_name', e.target.value)}
+                        required
+                    />
+
+                    <InputError className="mt-2" message={errors.first_name} />
+                </div>
+
+                {/* Last Name */}
+                <div>
+                    <InputLabel htmlFor="last_name" value="Last Name" />
+
+                    <TextInput
+                        id="last_name"
+                        className="mt-1 block w-full"
+                        value={data.last_name}
+                        onChange={(e) => setData('last_name', e.target.value)}
+                        required
+                    />
+
+                    <InputError className="mt-2" message={errors.last_name} />
+                </div>
+
+                {/* Email */}
                 <div>
                     <InputLabel htmlFor="email" value="Email" />
 
@@ -67,6 +115,35 @@ export default function UpdateProfileInformation({
                     />
 
                     <InputError className="mt-2" message={errors.email} />
+                </div>
+
+                {/* Phone */}
+                <div>
+                    <InputLabel htmlFor="phone" value="Phone Number" />
+
+                    <TextInput
+                        id="phone"
+                        type="text"
+                        className="mt-1 block w-full"
+                        value={data.phone}
+                        onChange={(e) => setData('phone', e.target.value)}
+                    />
+
+                    <InputError className="mt-2" message={errors.phone} />
+                </div>
+
+                {/* Profile Image */}
+                <div>
+                    <InputLabel htmlFor="profile_image" value="Profile Image" />
+
+                    <input
+                        id="profile_image"
+                        type="file"
+                        className="mt-1 block w-full"
+                        onChange={(e) => setData('profile_image', e.target.files[0])}
+                    />
+
+                    <InputError className="mt-2" message={errors.profile_image} />
                 </div>
 
                 {mustVerifyEmail && user.email_verified_at === null && (

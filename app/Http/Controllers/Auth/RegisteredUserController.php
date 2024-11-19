@@ -31,15 +31,22 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $full_name = $request->first_name . ' ' . $request->last_name;
+        $profileImageUrl = $this->generateProfileImageUrl($request->all());
+
         $user = User::create([
-            'name' => $request->name,
+            'full_name' => $full_name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'profile_image' => $profileImageUrl,
         ]);
 
         event(new Registered($user));
@@ -47,5 +54,15 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));
+    }
+
+    protected function generateProfileImageUrl(array $input): string
+    {
+        $fullName = $input['first_name'] . ' ' . $input['last_name'];
+
+        return vsprintf('https://www.gravatar.com/avatar/%s.jpg?s=200&d=%s', [
+            md5(strtolower($input['email'])),
+            $fullName ? urlencode('https://ui-avatars.com/api/' . $fullName) : 'mp'
+        ]);
     }
 }
