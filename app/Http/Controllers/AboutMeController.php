@@ -7,7 +7,12 @@ use Inertia\Inertia;
 
 class AboutMeController extends Controller
 {
-    public function index()
+    /**
+     * Display the "About Me" page with the authenticated user's information.
+     *
+     * @return \Inertia\Response
+     */
+    public function index(): \Inertia\Response
     {
         return Inertia::render('AboutMe', [
             'user' => Auth::user(),

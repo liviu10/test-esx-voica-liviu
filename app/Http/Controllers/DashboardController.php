@@ -7,7 +7,12 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index()
+    /**
+     * Display the dashboard page with the authenticated user's information.
+     *
+     * @return \Inertia\Response
+     */
+    public function index(): \Inertia\Response
     {
         return Inertia::render('Dashboard', [
             'user' => Auth::user(),
